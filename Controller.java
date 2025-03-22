@@ -13,7 +13,6 @@ public class Controller {
         this.model = model;
         this.view = view;
 
-        // Add action listeners
         view.addStartButtonListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -30,22 +29,29 @@ public class Controller {
     }
 
     private void startSimulation() {
-        // Get user input
-        int memoryBlocks = Integer.parseInt(view.getMemoryBlocks());
-        String testCase = view.getTestCase();
+        int memoryBlocks;
+        try {
+            memoryBlocks = Integer.parseInt(view.getMemoryBlocks());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(view, "Invalid number format for memory blocks!");
+            return;
+        }
 
-        // Validate input
+        // Enforce minimum memoryBlocks of 1024
         if (memoryBlocks < 1024) {
             JOptionPane.showMessageDialog(view, "Number of memory blocks must be at least 1024.");
             return;
         }
+
+        String testCase = view.getTestCase();
 
         // Run simulation
         model.simulate(testCase, memoryBlocks);
 
         // Update View
         view.updateStatistics(model);
-        view.setLog("Simulation started with " + memoryBlocks + " memory blocks and test case: " + testCase);
+        view.setLog("Simulation started with " + memoryBlocks + " memory blocks (" + testCase + ")");
+        
         if (isStepByStepAnimation) {
             currentStep = 0;
             showStepByStep();

@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Model {
     private int memoryBlocks;
@@ -7,16 +9,23 @@ public class Model {
     private int cacheMisses;
     private int memoryAccessCount;
     private double totalMemoryAccessTime;
-    private String[][] cacheMemory; // Represents the cache (32 blocks x 16 words)
-    private List<String[][]> cacheMemorySnapshots; // Stores cache memory state at each step
-    private List<String> cacheMemoryTraceLog; // Stores text log of cache memory trace
+    private String[][] cacheMemory;
+    private List<String[][]> cacheMemorySnapshots;
+    private List<String> cacheMemoryTraceLog;
+    
+    private LinkedHashMap<Integer, Integer> lruCache = new LinkedHashMap<>(32, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
+            return size() > 32; // Evict oldest when cache full
+        }
+    };
 
-    // Constants for timing (in nanoseconds)
-    private static final double CACHE_HIT_TIME = 1.0; // Time for a cache hit
-    private static final double CACHE_MISS_TIME = 10.0; // Time for a cache miss
+    private static final double CACHE_HIT_TIME = 1.0;
+    private static final double CACHE_MISS_TIME = 10.0;
+    private static final int CACHE_SIZE = 32;
 
     public Model() {
-        cacheMemory = new String[32][16]; // Initialize cache memory
+        cacheMemory = new String[CACHE_SIZE][16];
         cacheMemorySnapshots = new ArrayList<>();
         cacheMemoryTraceLog = new ArrayList<>();
         resetStatistics();
@@ -27,6 +36,7 @@ public class Model {
         cacheMisses = 0;
         memoryAccessCount = 0;
         totalMemoryAccessTime = 0.0;
+        lruCache.clear();
         cacheMemorySnapshots.clear();
         cacheMemoryTraceLog.clear();
     }
@@ -34,9 +44,7 @@ public class Model {
     public void simulate(String testCase, int memoryBlocks) {
         this.memoryBlocks = memoryBlocks;
         resetStatistics();
-
-        // Placeholder logic for simulation
-        switch (testCase) {
+        switch(testCase) {
             case "Sequential Sequence":
                 simulateSequentialSequence();
                 break;
@@ -50,99 +58,82 @@ public class Model {
     }
 
     private void simulateSequentialSequence() {
-        // Simulate sequential access pattern
-        for (int i = 0; i < 2 * 32; i++) { // 2n cache blocks
-            accessMemory(i % memoryBlocks);
+        // Access 4 full passes through the cache
+        for(int i = 0; i < 4 * CACHE_SIZE; i++) {
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            accessMemory(block);
         }
     }
 
     private void simulateRandomSequence() {
-        // Simulate random access pattern
-        for (int i = 0; i < 4 * 32; i++) { // 4n cache blocks
-            int block = (int) (Math.random() * memoryBlocks);
+        for(int i = 0; i < 4 * CACHE_SIZE; i++) {
+            int block = (int)(Math.random() * memoryBlocks); // Random block within memoryBlocks
             accessMemory(block);
         }
     }
 
     private void simulateMidRepeatBlocks() {
-        // Simulate mid-repeat access pattern
-        for (int i = 0; i < 32 - 1; i++) { // Up to n-1 blocks
-            accessMemory(i % memoryBlocks);
+        // Phase 1: Initial sequential access
+        for(int i = 0; i < CACHE_SIZE; i++) {
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            accessMemory(block);
         }
-        for (int i = 0; i < 32; i++) { // Repeat middle sequence
-            accessMemory(i % memoryBlocks);
+
+        // Phase 2: Repeated middle section
+        int midStart = memoryBlocks / 2; // Middle of memoryBlocks
+        for(int j = 0; j < 2; j++) {
+            for(int i = midStart; i < midStart + CACHE_SIZE; i++) {
+                int block = i % memoryBlocks; // Wrap around if necessary
+                accessMemory(block);
+            }
         }
-        for (int i = 32; i < 2 * 32; i++) { // Up to 2n blocks
-            accessMemory(i % memoryBlocks);
+
+        // Phase 3: Final sequential access
+        for(int i = 2 * CACHE_SIZE; i < 4 * CACHE_SIZE; i++) {
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            accessMemory(block);
         }
     }
 
     private void accessMemory(int block) {
         memoryAccessCount++;
-        if (block % 4 == 0) { // Placeholder logic for cache hit/miss
+        boolean isHit = lruCache.containsKey(block);
+
+        if(isHit) {
             cacheHits++;
-            totalMemoryAccessTime += CACHE_HIT_TIME; // Add cache hit time
+            totalMemoryAccessTime += CACHE_HIT_TIME;
+            lruCache.get(block); // Update LRU position
         } else {
             cacheMisses++;
-            totalMemoryAccessTime += CACHE_MISS_TIME; // Add cache miss time
-            // Update cache memory (LRU logic goes here)
+            totalMemoryAccessTime += CACHE_MISS_TIME;
+            lruCache.put(block, block);
         }
 
-        // Capture cache memory snapshot
         String[][] snapshot = deepCopyCacheMemory();
         cacheMemorySnapshots.add(snapshot);
-
-        // Add to text log
+        
         String logEntry = "Step " + memoryAccessCount + ": Accessed Block " + block +
-                " (Cache " + (block % 4 == 0 ? "Hit" : "Miss") + ")";
+                " (Cache " + (isHit ? "Hit" : "Miss") + ")";
         cacheMemoryTraceLog.add(logEntry);
     }
 
     private String[][] deepCopyCacheMemory() {
-        String[][] copy = new String[32][16];
-        for (int i = 0; i < 32; i++) {
+        String[][] copy = new String[CACHE_SIZE][16];
+        for(int i = 0; i < CACHE_SIZE; i++) {
             System.arraycopy(cacheMemory[i], 0, copy[i], 0, 16);
         }
         return copy;
     }
 
-    public int getMemoryAccessCount() {
-        return memoryAccessCount;
-    }
-
-    public int getCacheHits() {
-        return cacheHits;
-    }
-
-    public int getCacheMisses() {
-        return cacheMisses;
-    }
-
-    public double getCacheHitRate() {
-        return (double) cacheHits / memoryAccessCount;
-    }
-
-    public double getCacheMissRate() {
-        return (double) cacheMisses / memoryAccessCount;
-    }
-
-    public double getAverageMemoryAccessTime() {
-        return totalMemoryAccessTime / memoryAccessCount;
-    }
-
-    public double getTotalMemoryAccessTime() {
-        return totalMemoryAccessTime;
-    }
-
-    public String[][] getCacheMemory() {
-        return cacheMemory;
-    }
-
-    public List<String[][]> getCacheMemorySnapshots() {
-        return cacheMemorySnapshots;
-    }
-
-    public List<String> getCacheMemoryTraceLog() {
-        return cacheMemoryTraceLog;
-    }
+    // Getters remain unchanged
+    public int getMemoryAccessCount() { return memoryAccessCount; }
+    public int getCacheHits() { return cacheHits; }
+    public int getCacheMisses() { return cacheMisses; }
+    public double getCacheHitRate() { return (double) cacheHits / memoryAccessCount; }
+    public double getCacheMissRate() { return (double) cacheMisses / memoryAccessCount; }
+    public double getAverageMemoryAccessTime() { return totalMemoryAccessTime / memoryAccessCount; }
+    public double getTotalMemoryAccessTime() { return totalMemoryAccessTime; }
+    public String[][] getCacheMemory() { return cacheMemory; }
+    public List<String[][]> getCacheMemorySnapshots() { return cacheMemorySnapshots; }
+    public List<String> getCacheMemoryTraceLog() { return cacheMemoryTraceLog; }
 }
