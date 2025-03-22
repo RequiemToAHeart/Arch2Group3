@@ -6,6 +6,7 @@ public class View extends JFrame {
     private JTextField memoryBlocksField;
     private JComboBox<String> testCaseComboBox;
     private JButton startButton;
+    private JButton toggleAnimationButton;
     private JTextArea logArea;
     private JTable cacheTable;
     private JLabel statsLabel;
@@ -17,7 +18,7 @@ public class View extends JFrame {
         setLayout(new BorderLayout());
 
         // Input Panel
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2));
         inputPanel.add(new JLabel("Number of Memory Blocks:"));
         memoryBlocksField = new JTextField();
         inputPanel.add(memoryBlocksField);
@@ -26,6 +27,8 @@ public class View extends JFrame {
         inputPanel.add(testCaseComboBox);
         startButton = new JButton("Start Simulation");
         inputPanel.add(startButton);
+        toggleAnimationButton = new JButton("Toggle Animation");
+        inputPanel.add(toggleAnimationButton);
         add(inputPanel, BorderLayout.NORTH);
 
         // Output Panel
@@ -54,10 +57,10 @@ public class View extends JFrame {
     public void setCacheMemory(String[][] cacheMemory) {
         for (int i = 0; i < cacheMemory.length; i++) {
             for (int j = 0; j < 2; j++) { // Only iterate over 2 columns
-                if (j < cacheMemory[i].length) { // Ensure we don't exceed the cacheMemory array bounds
+                if (j < cacheMemory[i].length) {
                     cacheTable.setValueAt(cacheMemory[i][j], i, j);
                 } else {
-                    cacheTable.setValueAt("", i, j); // Fill with empty string if cacheMemory has fewer columns
+                    cacheTable.setValueAt("", i, j);
                 }
             }
         }
@@ -65,6 +68,22 @@ public class View extends JFrame {
 
     public void setStatistics(String stats) {
         statsLabel.setText(stats);
+    }
+
+    public String getMemoryBlocks() {
+        return memoryBlocksField.getText();
+    }
+
+    public String getTestCase() {
+        return (String) testCaseComboBox.getSelectedItem();
+    }
+
+    public void addStartButtonListener(ActionListener listener) {
+        startButton.addActionListener(listener);
+    }
+
+    public void addToggleAnimationButtonListener(ActionListener listener) {
+        toggleAnimationButton.addActionListener(listener);
     }
 
     public void updateStatistics(Model model) {
@@ -78,17 +97,5 @@ public class View extends JFrame {
                 + "Total Memory Access Time: " + String.format("%.2f", model.getTotalMemoryAccessTime()) + " ns<br>"
                 + "</html>";
         setStatistics(stats);
-    }
-
-    public String getMemoryBlocks() {
-        return memoryBlocksField.getText();
-    }
-
-    public String getTestCase() {
-        return (String) testCaseComboBox.getSelectedItem();
-    }
-
-    public void addStartButtonListener(ActionListener listener) {
-        startButton.addActionListener(listener);
     }
 }

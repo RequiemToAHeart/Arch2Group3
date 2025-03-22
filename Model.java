@@ -1,10 +1,15 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Model {
     private int memoryBlocks;
     private int cacheHits;
     private int cacheMisses;
     private int memoryAccessCount;
-    private double totalMemoryAccessTime; // Total memory access time
+    private double totalMemoryAccessTime;
     private String[][] cacheMemory; // Represents the cache (32 blocks x 16 words)
+    private List<String[][]> cacheMemorySnapshots; // Stores cache memory state at each step
+    private List<String> cacheMemoryTraceLog; // Stores text log of cache memory trace
 
     // Constants for timing (in nanoseconds)
     private static final double CACHE_HIT_TIME = 1.0; // Time for a cache hit
@@ -12,6 +17,8 @@ public class Model {
 
     public Model() {
         cacheMemory = new String[32][16]; // Initialize cache memory
+        cacheMemorySnapshots = new ArrayList<>();
+        cacheMemoryTraceLog = new ArrayList<>();
         resetStatistics();
     }
 
@@ -20,6 +27,8 @@ public class Model {
         cacheMisses = 0;
         memoryAccessCount = 0;
         totalMemoryAccessTime = 0.0;
+        cacheMemorySnapshots.clear();
+        cacheMemoryTraceLog.clear();
     }
 
     public void simulate(String testCase, int memoryBlocks) {
@@ -78,6 +87,23 @@ public class Model {
             totalMemoryAccessTime += CACHE_MISS_TIME; // Add cache miss time
             // Update cache memory (LRU logic goes here)
         }
+
+        // Capture cache memory snapshot
+        String[][] snapshot = deepCopyCacheMemory();
+        cacheMemorySnapshots.add(snapshot);
+
+        // Add to text log
+        String logEntry = "Step " + memoryAccessCount + ": Accessed Block " + block +
+                " (Cache " + (block % 4 == 0 ? "Hit" : "Miss") + ")";
+        cacheMemoryTraceLog.add(logEntry);
+    }
+
+    private String[][] deepCopyCacheMemory() {
+        String[][] copy = new String[32][16];
+        for (int i = 0; i < 32; i++) {
+            System.arraycopy(cacheMemory[i], 0, copy[i], 0, 16);
+        }
+        return copy;
     }
 
     public int getMemoryAccessCount() {
@@ -110,5 +136,13 @@ public class Model {
 
     public String[][] getCacheMemory() {
         return cacheMemory;
+    }
+
+    public List<String[][]> getCacheMemorySnapshots() {
+        return cacheMemorySnapshots;
+    }
+
+    public List<String> getCacheMemoryTraceLog() {
+        return cacheMemoryTraceLog;
     }
 }
