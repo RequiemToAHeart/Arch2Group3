@@ -25,7 +25,7 @@ public class Model {
     private static final int CACHE_SIZE = 32;
 
     public Model() {
-        cacheMemory = new String[CACHE_SIZE][16];
+        cacheMemory = new String[32][2];
         cacheMemorySnapshots = new ArrayList<>();
         cacheMemoryTraceLog = new ArrayList<>();
         resetStatistics();
@@ -39,6 +39,12 @@ public class Model {
         lruCache.clear();
         cacheMemorySnapshots.clear();
         cacheMemoryTraceLog.clear();
+
+        // Initialize cacheMemory with empty strings
+        for (int i = 0; i < 32; i++) {
+            cacheMemory[i][0] = ""; // Block number
+            cacheMemory[i][1] = ""; // Data (first word of the block)
+        }
     }
 
     public void simulate(String testCase, int memoryBlocks) {
@@ -98,29 +104,53 @@ public class Model {
     private void accessMemory(int block) {
         memoryAccessCount++;
         boolean isHit = lruCache.containsKey(block);
-
-        if(isHit) {
+    
+        if (isHit) {
             cacheHits++;
             totalMemoryAccessTime += CACHE_HIT_TIME;
-            lruCache.get(block); 
+            lruCache.get(block); // Mark as recently used
         } else {
             cacheMisses++;
             totalMemoryAccessTime += CACHE_MISS_TIME;
-            lruCache.put(block, block);
+            lruCache.put(block, block); // Add to cache
         }
-
+    
+        // Update cacheMemory to reflect the current state of the cache
+        synchronizeCacheMemory();
+    
+        // Capture cache memory snapshot
         String[][] snapshot = deepCopyCacheMemory();
         cacheMemorySnapshots.add(snapshot);
-        
+    
+        // Add to text log
         String logEntry = "Step " + memoryAccessCount + ": Accessed Block " + block +
                 " (Cache " + (isHit ? "Hit" : "Miss") + ")";
         cacheMemoryTraceLog.add(logEntry);
     }
+    
+    public static void main(String[] args) {
+        
+    } void synchronizeCacheMemory() {
+        // Clear the cacheMemory array
+        for (int i = 0; i < 32; i++) {
+            cacheMemory[i][0] = ""; // Block number
+            cacheMemory[i][1] = ""; // Data (first word of the block)
+        }
+    
+        // Populate cacheMemory with the blocks currently in the lruCache
+        int index = 0;
+        for (Map.Entry<Integer, Integer> entry : lruCache.entrySet()) {
+            int block = entry.getKey();
+            cacheMemory[index][0] = String.valueOf(block); // Block number
+            cacheMemory[index][1] = String.valueOf(block * 16); // First word of the block
+            index++;
+        }
+    }
 
     private String[][] deepCopyCacheMemory() {
-        String[][] copy = new String[CACHE_SIZE][16];
-        for(int i = 0; i < CACHE_SIZE; i++) {
-            System.arraycopy(cacheMemory[i], 0, copy[i], 0, 16);
+        String[][] copy = new String[32][2];
+        for (int i = 0; i < 32; i++) {
+            System.arraycopy(cacheMemory[i], 0, copy[i], 0, 2);
         }
         return copy;
     }
