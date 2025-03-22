@@ -42,6 +42,7 @@ public class View extends JFrame {
         Object[][] data = new Object[32][2]; // 32 cache blocks
         cacheTable = new JTable(data, columnNames);
         outputPanel.add(new JScrollPane(cacheTable), BorderLayout.WEST);
+    
 
         // Statistics Panel
         statsLabel = new JLabel("Statistics will appear here.");
@@ -56,13 +57,10 @@ public class View extends JFrame {
 
     public void setCacheMemory(String[][] cacheMemory) {
         for (int i = 0; i < cacheMemory.length; i++) {
-            for (int j = 0; j < 2; j++) { // Only iterate over 2 columns
-                if (j < cacheMemory[i].length) {
-                    cacheTable.setValueAt(cacheMemory[i][j], i, j);
-                } else {
-                    cacheTable.setValueAt("", i, j);
-                }
-            }
+            // Set block number in the first column
+            cacheTable.setValueAt(cacheMemory[i][0], i, 0);
+            // Set data (first word of the block) in the second column
+            cacheTable.setValueAt(cacheMemory[i][1], i, 1);
         }
     }
 
