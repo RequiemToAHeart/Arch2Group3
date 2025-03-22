@@ -45,10 +45,8 @@ public class Controller {
 
         String testCase = view.getTestCase();
 
-        // Run simulation
         model.simulate(testCase, memoryBlocks);
 
-        // Update View
         view.updateStatistics(model);
         view.setLog("Simulation started with " + memoryBlocks + " memory blocks (" + testCase + ")");
         

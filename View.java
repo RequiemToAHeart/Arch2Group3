@@ -17,7 +17,6 @@ public class View extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Input Panel
         JPanel inputPanel = new JPanel(new GridLayout(4, 2));
         inputPanel.add(new JLabel("Number of Memory Blocks:"));
         memoryBlocksField = new JTextField();
@@ -31,20 +30,17 @@ public class View extends JFrame {
         inputPanel.add(toggleAnimationButton);
         add(inputPanel, BorderLayout.NORTH);
 
-        // Output Panel
         JPanel outputPanel = new JPanel(new BorderLayout());
         logArea = new JTextArea();
         logArea.setEditable(false);
         outputPanel.add(new JScrollPane(logArea), BorderLayout.CENTER);
 
-        // Cache Table
         String[] columnNames = {"Block", "Data"};
-        Object[][] data = new Object[32][2]; // 32 cache blocks
+        Object[][] data = new Object[32][2]; 
         cacheTable = new JTable(data, columnNames);
         outputPanel.add(new JScrollPane(cacheTable), BorderLayout.WEST);
     
 
-        // Statistics Panel
         statsLabel = new JLabel("Statistics will appear here.");
         outputPanel.add(statsLabel, BorderLayout.SOUTH);
 
@@ -57,9 +53,7 @@ public class View extends JFrame {
 
     public void setCacheMemory(String[][] cacheMemory) {
         for (int i = 0; i < cacheMemory.length; i++) {
-            // Set block number in the first column
             cacheTable.setValueAt(cacheMemory[i][0], i, 0);
-            // Set data (first word of the block) in the second column
             cacheTable.setValueAt(cacheMemory[i][1], i, 1);
         }
     }
