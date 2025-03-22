@@ -40,10 +40,9 @@ public class Model {
         cacheMemorySnapshots.clear();
         cacheMemoryTraceLog.clear();
 
-        // Initialize cacheMemory with empty strings
         for (int i = 0; i < 32; i++) {
-            cacheMemory[i][0] = ""; // Block number
-            cacheMemory[i][1] = ""; // Data (first word of the block)
+            cacheMemory[i][0] = ""; 
+            cacheMemory[i][1] = ""; 
         }
     }
 
@@ -108,21 +107,18 @@ public class Model {
         if (isHit) {
             cacheHits++;
             totalMemoryAccessTime += CACHE_HIT_TIME;
-            lruCache.get(block); // Mark as recently used
+            lruCache.get(block); 
         } else {
             cacheMisses++;
             totalMemoryAccessTime += CACHE_MISS_TIME;
-            lruCache.put(block, block); // Add to cache
+            lruCache.put(block, block); 
         }
     
-        // Update cacheMemory to reflect the current state of the cache
         synchronizeCacheMemory();
     
-        // Capture cache memory snapshot
         String[][] snapshot = deepCopyCacheMemory();
         cacheMemorySnapshots.add(snapshot);
     
-        // Add to text log
         String logEntry = "Step " + memoryAccessCount + ": Accessed Block " + block +
                 " (Cache " + (isHit ? "Hit" : "Miss") + ")";
         cacheMemoryTraceLog.add(logEntry);
@@ -131,18 +127,16 @@ public class Model {
     public static void main(String[] args) {
         
     } void synchronizeCacheMemory() {
-        // Clear the cacheMemory array
         for (int i = 0; i < 32; i++) {
-            cacheMemory[i][0] = ""; // Block number
-            cacheMemory[i][1] = ""; // Data (first word of the block)
+            cacheMemory[i][0] = ""; 
+            cacheMemory[i][1] = ""; 
         }
     
-        // Populate cacheMemory with the blocks currently in the lruCache
         int index = 0;
         for (Map.Entry<Integer, Integer> entry : lruCache.entrySet()) {
             int block = entry.getKey();
-            cacheMemory[index][0] = String.valueOf(block); // Block number
-            cacheMemory[index][1] = String.valueOf(block * 16); // First word of the block
+            cacheMemory[index][0] = String.valueOf(block); 
+            cacheMemory[index][1] = String.valueOf(block * 16); 
             index++;
         }
     }

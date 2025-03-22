@@ -37,7 +37,6 @@ public class Controller {
             return;
         }
 
-        // Enforce minimum memoryBlocks of 1024
         if (memoryBlocks < 1024) {
             JOptionPane.showMessageDialog(view, "Number of memory blocks must be at least 1024.");
             return;
@@ -75,10 +74,8 @@ public class Controller {
     }
     
     private void showFinalSnapshot() {
-        // Ensure cacheMemory is synchronized with lruCache
         model.synchronizeCacheMemory();
         
-        // Display the final snapshot
         view.setCacheMemory(model.getCacheMemory());
         view.setLog("Final cache memory snapshot.");
         for (String logEntry : model.getCacheMemoryTraceLog()) {
