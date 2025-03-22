@@ -16,7 +16,7 @@ public class Model {
     private LinkedHashMap<Integer, Integer> lruCache = new LinkedHashMap<>(32, 0.75f, true) {
         @Override
         protected boolean removeEldestEntry(Map.Entry<Integer, Integer> eldest) {
-            return size() > 32; // Evict oldest when cache full
+            return size() > 32; 
         }
     };
 
@@ -58,39 +58,39 @@ public class Model {
     }
 
     private void simulateSequentialSequence() {
-        // Access 4 full passes through the cache
+   
         for(int i = 0; i < 4 * CACHE_SIZE; i++) {
-            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; 
             accessMemory(block);
         }
     }
 
     private void simulateRandomSequence() {
         for(int i = 0; i < 4 * CACHE_SIZE; i++) {
-            int block = (int)(Math.random() * memoryBlocks); // Random block within memoryBlocks
+            int block = (int)(Math.random() * memoryBlocks); 
             accessMemory(block);
         }
     }
 
     private void simulateMidRepeatBlocks() {
-        // Phase 1: Initial sequential access
+      
         for(int i = 0; i < CACHE_SIZE; i++) {
-            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; 
             accessMemory(block);
         }
 
-        // Phase 2: Repeated middle section
-        int midStart = memoryBlocks / 2; // Middle of memoryBlocks
+      
+        int midStart = memoryBlocks / 2; 
         for(int j = 0; j < 2; j++) {
             for(int i = midStart; i < midStart + CACHE_SIZE; i++) {
-                int block = i % memoryBlocks; // Wrap around if necessary
+                int block = i % memoryBlocks; 
                 accessMemory(block);
             }
         }
 
-        // Phase 3: Final sequential access
+   
         for(int i = 2 * CACHE_SIZE; i < 4 * CACHE_SIZE; i++) {
-            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks; // Spread accesses across memoryBlocks
+            int block = (i * (memoryBlocks / CACHE_SIZE)) % memoryBlocks;
             accessMemory(block);
         }
     }
@@ -102,7 +102,7 @@ public class Model {
         if(isHit) {
             cacheHits++;
             totalMemoryAccessTime += CACHE_HIT_TIME;
-            lruCache.get(block); // Update LRU position
+            lruCache.get(block); 
         } else {
             cacheMisses++;
             totalMemoryAccessTime += CACHE_MISS_TIME;
@@ -125,7 +125,6 @@ public class Model {
         return copy;
     }
 
-    // Getters remain unchanged
     public int getMemoryAccessCount() { return memoryAccessCount; }
     public int getCacheHits() { return cacheHits; }
     public int getCacheMisses() { return cacheMisses; }
