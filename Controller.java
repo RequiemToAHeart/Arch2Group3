@@ -75,7 +75,7 @@ public class Controller {
             view.setLog("End of simulation.");
         }
     }
-
+    
     private void showFinalSnapshot() {
         view.setCacheMemory(model.getCacheMemory());
         view.setLog("Final cache memory snapshot.");
