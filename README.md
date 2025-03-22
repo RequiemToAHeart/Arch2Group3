@@ -1,8 +1,11 @@
 Cache Simulation Project - Group 3
+
 Project Overview
+
 This project is a cache simulation system designed to analyze various test set scenarios based on the assigned cache mapping function and replacement policy. Our implementation follows the specifications given in the project guidelines.
+
 Group Information
-    • Group Number: 3
+      • Group Number: 3
     • Cache Type: 4-way Set Associative (BSA) + Least Recently Used (LRU)
 Cache Specifications
     • Cache Mapping: 4-way Set Associative
